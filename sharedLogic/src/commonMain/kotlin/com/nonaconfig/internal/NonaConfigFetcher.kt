@@ -12,9 +12,10 @@ import io.ktor.http.*
 internal class NonaConfigFetcher(
     private val apiKey: String,
     private val environmentId: String,
-    private val baseUrl: String = "https://nona-config.ryware.io"
+    private val baseUrl: String = "https://nona-config.ryware.io",
+    httpClient: HttpClient? = null
 ) {
-    private val client = HttpClient {
+    private val client = httpClient ?: HttpClient {
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
         }

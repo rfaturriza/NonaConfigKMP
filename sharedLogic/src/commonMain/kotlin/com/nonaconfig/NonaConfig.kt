@@ -3,6 +3,7 @@ package com.nonaconfig
 import com.nonaconfig.internal.NonaConfigFetcher
 import com.nonaconfig.internal.NonaConfigStorage
 import com.russhwolf.settings.Settings
+import io.ktor.client.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.KSerializer
 import kotlin.time.Clock
@@ -22,6 +23,18 @@ class NonaConfig private constructor() {
         this.environmentId = environmentId
         this.storage = NonaConfigStorage(Settings())
         this.fetcher = NonaConfigFetcher(apiKey, environmentId)
+    }
+
+    internal fun initializeForTest(
+        apiKey: String,
+        environmentId: String,
+        settings: Settings,
+        httpClient: HttpClient
+    ) {
+        this.apiKey = apiKey
+        this.environmentId = environmentId
+        this.storage = NonaConfigStorage(settings)
+        this.fetcher = NonaConfigFetcher(apiKey, environmentId, httpClient = httpClient)
     }
 
     fun setConfigSettings(settings: NonaConfigSettings) {

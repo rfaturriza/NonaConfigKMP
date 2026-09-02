@@ -26,7 +26,7 @@ internal class NonaConfigValueImpl(
     override fun <T> asJson(serializer: KSerializer<T>): T? {
         return try {
             json.decodeFromString(serializer, value)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }

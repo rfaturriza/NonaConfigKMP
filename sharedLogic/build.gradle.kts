@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.kmmbridge)
     alias(libs.plugins.skie)
+    alias(libs.plugins.kover)
     id("maven-publish")
 }
 
@@ -54,6 +55,22 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.multiplatform.settings.test)
+            implementation(libs.ktor.client.mock)
+        }
+    }
+}
+
+kover {
+    reports {
+        total {
+            xml {
+                onCheck = true
+            }
+            html {
+                onCheck = true
+            }
         }
     }
 }
@@ -86,7 +103,7 @@ publishing {
             pom {
                 name.set("Nona Config SDK")
                 description.set("A Kotlin Multiplatform SDK for Nona Config")
-                url.set("https://github.com/ryware/nona-config")
+                url.set("https://github.com/rfaturriza/NonaConfigKMP")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
@@ -94,9 +111,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:github.com/ryware/nona-config.git")
-                    developerConnection.set("scm:git:ssh://github.com/ryware/nona-config.git")
-                    url.set("https://github.com/ryware/nona-config/tree/main")
+                    connection.set("scm:git:github.com/rfaturriza/NonaConfigKMP.git")
+                    developerConnection.set("scm:git:ssh://github.com/rfaturriza/NonaConfigKMP.git")
+                    url.set("https://github.com/rfaturriza/NonaConfigKMP/tree/main")
                 }
             }
         }
@@ -104,7 +121,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ryware/nona-config")
+            url = uri("https://maven.pkg.github.com/rfaturriza/NonaConfigKMP")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
