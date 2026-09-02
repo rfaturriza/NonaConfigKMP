@@ -1,4 +1,5 @@
 # Nona Config SDK
+[![codecov](https://codecov.io/gh/rfaturriza/NonaConfigKMP/branch/main/graph/badge.svg)](https://codecov.io/gh/rfaturriza/NonaConfigKMP)
 
 A Kotlin Multiplatform SDK for Nona Config, replicating core features of Firebase Remote Config: defaults, fetching, caching, and activation.
 
