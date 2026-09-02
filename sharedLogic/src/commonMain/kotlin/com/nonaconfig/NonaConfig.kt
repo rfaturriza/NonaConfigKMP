@@ -5,8 +5,8 @@ import com.nonaconfig.internal.NonaConfigStorage
 import com.russhwolf.settings.Settings
 import io.ktor.client.*
 import kotlinx.coroutines.*
+import kotlinx.datetime.Clock
 import kotlinx.serialization.KSerializer
-import kotlin.time.Clock
 
 class NonaConfig private constructor() {
 

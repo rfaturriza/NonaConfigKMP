@@ -17,6 +17,7 @@ group = "com.nonaconfig"
 version = "1.0.0"
 
 kotlin {
+    jvm()
     android {
        namespace = "com.nonaconfig"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -46,6 +47,7 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
+            implementation(libs.kotlinx.datetime)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
