@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.multiplatform.settings.test)
             implementation(libs.ktor.client.mock)
+            implementation(libs.ktor.client.okhttp)
         }
     }
 }

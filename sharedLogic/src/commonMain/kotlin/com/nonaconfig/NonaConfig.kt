@@ -8,7 +8,7 @@ import io.ktor.client.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.KSerializer
 
-class NonaConfig private constructor() {
+class NonaConfig internal constructor() {
 
     private lateinit var apiKey: String
     private lateinit var environmentId: String
@@ -103,6 +103,17 @@ class NonaConfig private constructor() {
     fun <T> getJson(key: String, serializer: KSerializer<T>): T? = getValue(key).asJson(serializer)
 
     companion object {
-        val instance: NonaConfig by lazy { NonaConfig() }
+        private var _instance: NonaConfig? = null
+        val instance: NonaConfig 
+            get() {
+                if (_instance == null) {
+                    _instance = NonaConfig()
+                }
+                return _instance!!
+            }
+
+        internal fun resetInstance() {
+            _instance = null
+        }
     }
 }

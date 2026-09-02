@@ -43,11 +43,23 @@ class NonaConfigInternalTest {
             respond(
                 content = "{\"key\": \"value\"}",
                 status = HttpStatusCode.OK,
-                headers = headersOf(HttpHeaders.ContentType, "application/json", HttpHeaders.ETag, "new-etag")
+                headers = headersOf(
+                    HttpHeaders.ContentType to listOf("application/json"),
+                    HttpHeaders.ETag to listOf("new-etag")
+                )
             )
         }
         
-        // We need to inject the mock engine into NonaConfigFetcher.
-        // I'll modify NonaConfigFetcher to accept a HttpClient or Engine.
+        val client = HttpClient(mockEngine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+        }
+        val fetcher = NonaConfigFetcher("api-key", "env", httpClient = client)
+        val result = fetcher.fetchAll(null)
+        
+        assertTrue(result is NonaConfigFetcher.FetchResult.Success)
+        assertEquals("value", result.config["key"])
+        assertEquals("new-etag", result.eTag)
     }
 }

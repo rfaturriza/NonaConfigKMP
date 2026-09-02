@@ -27,7 +27,10 @@ class NonaConfigFetcherTest {
             respond(
                 content = "{\"key\": \"value\"}",
                 status = HttpStatusCode.OK,
-                headers = headersOf(HttpHeaders.ContentType, "application/json", HttpHeaders.ETag, "etag123")
+                headers = headersOf(
+                    HttpHeaders.ContentType to listOf("application/json"),
+                    HttpHeaders.ETag to listOf("etag123")
+                )
             )
         }
         val fetcher = createFetcher(engine)
