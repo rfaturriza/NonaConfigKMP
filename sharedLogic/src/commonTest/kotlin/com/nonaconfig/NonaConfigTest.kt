@@ -1,6 +1,6 @@
 package com.nonaconfig
 
-import com.russhwolf.multiplatform.settings.MapSettings
+import com.russhwolf.settings.MapSettings
 import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -10,7 +10,7 @@ class NonaConfigTest {
     fun testDefaults() {
         val nonaConfig = NonaConfig.instance
         nonaConfig.initialize("test-api-key", "test-env")
-        
+
         val defaults = mapOf(
             "welcome_message" to "Hello Default",
             "feature_enabled" to true,
@@ -27,7 +27,7 @@ class NonaConfigTest {
     fun testGetValueFallback() {
         val nonaConfig = NonaConfig.instance
         nonaConfig.initialize("test-api-key", "test-env")
-        
+
         assertEquals("", nonaConfig.getString("non_existent_key"))
         assertEquals(false, nonaConfig.getBoolean("non_existent_key"))
         assertEquals(0L, nonaConfig.getLong("non_existent_key"))

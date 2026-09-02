@@ -46,6 +46,7 @@ nonaConfig.setDefaults(mapOf(
 ```kotlin
 coroutineScope.launch {
     // Fetch from remote and activate locally
+    // Uses ETags for efficient fetching (only downloads if changed)
     nonaConfig.fetchAndActivate()
 }
 ```
@@ -55,6 +56,20 @@ coroutineScope.launch {
 ```kotlin
 val message = nonaConfig.getString("welcome_message")
 val isEnabled = nonaConfig.getBoolean("feature_enabled")
+
+// Advanced: Parsing JSON values directly
+val theme = nonaConfig.getValue("theme_settings").asJson(ThemeConfig.serializer())
+```
+
+### 5. Advanced Settings
+
+```kotlin
+val settings = NonaConfigSettings.Builder()
+    .setMinimumFetchInterval(1.hours)
+    .setReleaseVersion("1.1.x") // Pin to a specific release line
+    .build()
+
+nonaConfig.setConfigSettings(settings)
 ```
 
 ## Security Best Practices

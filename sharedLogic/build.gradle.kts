@@ -45,7 +45,6 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
-            implementation(libs.kotlinx.datetime)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)

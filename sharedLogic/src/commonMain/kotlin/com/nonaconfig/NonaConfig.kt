@@ -2,10 +2,10 @@ package com.nonaconfig
 
 import com.nonaconfig.internal.NonaConfigFetcher
 import com.nonaconfig.internal.NonaConfigStorage
-import com.russhwolf.multiplatform.settings.Settings
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.*
-import kotlinx.datetime.Clock
-import kotlin.time.Duration
+import kotlinx.serialization.KSerializer
+import kotlin.time.Clock
 
 class NonaConfig private constructor() {
 
@@ -37,17 +37,25 @@ class NonaConfig private constructor() {
         val now = Clock.System.now().toEpochMilliseconds()
         val lastFetch = storage.lastFetchTime
         
-        if (now - lastFetch < settings.minimumFetchInterval.inWholeMilliseconds) {
+        val interval = settings.minimumFetchInterval.inWholeMilliseconds
+        if (now - lastFetch < interval) {
             return@withContext false
         }
 
-        try {
-            val fetchedConfig = fetcher.fetchAll()
-            storage.saveFetchedConfig(fetchedConfig)
-            storage.lastFetchTime = now
-            true
-        } catch (e: Exception) {
-            false
+        when (val result = fetcher.fetchAll(storage.eTag, settings.releaseVersion)) {
+            is NonaConfigFetcher.FetchResult.Success -> {
+                storage.saveFetchedConfig(result.config)
+                storage.eTag = result.eTag
+                storage.lastFetchTime = now
+                true
+            }
+            is NonaConfigFetcher.FetchResult.NotModified -> {
+                storage.lastFetchTime = now
+                true
+            }
+            is NonaConfigFetcher.FetchResult.Error -> {
+                false
+            }
         }
     }
 
@@ -79,6 +87,7 @@ class NonaConfig private constructor() {
     fun getBoolean(key: String): Boolean = getValue(key).asBoolean()
     fun getLong(key: String): Long = getValue(key).asLong()
     fun getDouble(key: String): Double = getValue(key).asDouble()
+    fun <T> getJson(key: String, serializer: KSerializer<T>): T? = getValue(key).asJson(serializer)
 
     companion object {
         val instance: NonaConfig by lazy { NonaConfig() }

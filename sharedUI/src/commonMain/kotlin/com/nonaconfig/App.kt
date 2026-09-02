@@ -19,21 +19,32 @@ import org.jetbrains.compose.resources.painterResource
 import nonaconfigkmp.sharedui.generated.resources.Res
 import nonaconfigkmp.sharedui.generated.resources.compose_multiplatform
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
+
+@Serializable
+data class ThemeConfig(val primaryColor: String, val showBanner: Boolean)
+
 @Composable
 @Preview
 fun App(apiKey: String) {
     MaterialTheme {
         var showContent by remember { mutableStateOf(false) }
         var welcomeMessage by remember { mutableStateOf("Loading...") }
+        var themeConfig by remember { mutableStateOf<ThemeConfig?>(null) }
 
         LaunchedEffect(Unit) {
             val nonaConfig = NonaConfig.instance
             nonaConfig.initialize(apiKey, "production")
-            nonaConfig.setDefaults(mapOf("welcome_message" to "Hello from Defaults!"))
             
-            // In a real app, you'd fetch() here. 
-            // For now, we just demonstrate getting a value.
+            // Set complex defaults including JSON
+            nonaConfig.setDefaults(mapOf(
+                "welcome_message" to "Hello from Defaults!",
+                "theme_settings" to "{\"primaryColor\": \"#FF0000\", \"showBanner\": true}"
+            ))
+            
             welcomeMessage = nonaConfig.getString("welcome_message")
+            themeConfig = nonaConfig.getValue("theme_settings").asJson(ThemeConfig.serializer())
         }
 
         Column(
@@ -44,6 +55,14 @@ fun App(apiKey: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(text = welcomeMessage, style = MaterialTheme.typography.headlineMedium)
+            
+            themeConfig?.let {
+                Text(text = "Primary Color: ${it.primaryColor}")
+                if (it.showBanner) {
+                    Text(text = "Banner is ON", color = MaterialTheme.colorScheme.error)
+                }
+            }
+
             Button(onClick = { showContent = !showContent }) {
                 Text("Toggle Image")
             }
