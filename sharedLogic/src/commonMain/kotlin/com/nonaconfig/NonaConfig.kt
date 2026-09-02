@@ -8,6 +8,11 @@ import io.ktor.client.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.KSerializer
 
+import kotlin.native.ObjCName
+import kotlin.experimental.ExperimentalObjCName
+
+@OptIn(ExperimentalObjCName::class)
+@ObjCName("NonaConfigClient")
 class NonaConfig internal constructor() {
 
     private lateinit var apiKey: String

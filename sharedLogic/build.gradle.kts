@@ -3,13 +3,21 @@ import co.touchlab.skie.configuration.DefaultArgumentInterop
 import co.touchlab.skie.configuration.SealedInterop
 import co.touchlab.skie.configuration.EnumInterop
 
+// Helper to bridge GITHUB_TOKEN from env to GITHUB_PUBLISH_TOKEN if needed
+if (System.getenv("GITHUB_TOKEN") != null && !project.hasProperty("GITHUB_PUBLISH_TOKEN")) {
+    rootProject.extra["GITHUB_PUBLISH_TOKEN"] = System.getenv("GITHUB_TOKEN")
+}
+if (System.getenv("GITHUB_REPOSITORY") != null && !project.hasProperty("GITHUB_REPO")) {
+    rootProject.extra["GITHUB_REPO"] = System.getenv("GITHUB_REPOSITORY")
+}
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.maven.publish)
-    alias(libs.plugins.kmmbridge)
     alias(libs.plugins.skie)
+    alias(libs.plugins.kmmbridge)
     id("jacoco")
 }
 
@@ -35,7 +43,10 @@ kotlin {
     ).forEach {
         it.binaries.framework {
             baseName = xcfName
-            isStatic = true
+            isStatic = false // Best for distributable frameworks with Swift interfaces
+            freeCompilerArgs += listOf(
+                "-Xbinary=bundleId=com.nonaconfig.ios"
+            )
         }
     }
     
@@ -87,11 +98,19 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
 kmmbridge {
     frameworkName.set("NonaConfig")
-    spm(useCustomPackageFile = true)
-    mavenPublishArtifacts()
+    spm()
+    gitHubReleaseArtifacts(repository = "rfaturriza/NonaConfigKMP")
 }
 
 skie {
+    isEnabled.set(true)
+    analytics {
+        disableUpload.set(true)
+        enabled.set(false)
+    }
+    build {
+        produceDistributableFramework()
+    }
     features {
         group {
             DefaultArgumentInterop.Enabled(true)

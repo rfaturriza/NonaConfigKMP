@@ -95,14 +95,40 @@ plugins {
 NonaConfig.instance.initialize(BuildConfig.NONA_API_KEY, "production")
 ```
 
-### iOS
-Use Environment Variables or `.xcconfig` files to handle secrets.
+### iOS (Swift)
+In iOS, the main class is renamed to `NonaConfigClient` for better Swift integration.
 
-**ContentView.swift**
+**Swift Initialization**
 ```swift
+import NonaConfig // The name of your framework
+
+let client = NonaConfigClient.companion.instance
+
+// Securely getting the key from Environment or .xcconfig
 let apiKey = ProcessInfo.processInfo.environment["NONA_API_KEY"] ?? "default-key"
-NonaConfig.instance.initialize(apiKey: apiKey, environmentId: "production")
+client.initialize(apiKey: apiKey, environmentId: "production")
 ```
+
+**Swift Usage**
+```swift
+// Setting Defaults
+client.setDefaults(defaults: ["welcome_message": "Hello Swift!"])
+
+// Fetch and Activate (Async/Await)
+Task {
+    do {
+        let success = try await client.fetchAndActivate()
+        if success {
+            let message = client.getString(key: "welcome_message")
+            print(message)
+        }
+    } catch {
+        print("Fetch failed: \(error)")
+    }
+}
+```
+
+## Security Best Practices
 
 ## Distribution
 

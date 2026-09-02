@@ -1,23 +1,29 @@
-// swift-tools-version:5.9
+// swift-tools-version:5.3
 import PackageDescription
 
+// BEGIN KMMBRIDGE VARIABLES BLOCK (do not edit)
+let remoteKotlinUrl = "https://api.github.com/repos/rfaturriza/NonaConfigKMP/releases/assets/540966833.zip"
+let remoteKotlinChecksum = "39da03406da3b9100518a24b97f9600921c47e9907087307cea8b44e1d607c34"
+let packageName = "NonaConfig"
+// END KMMBRIDGE BLOCK
+
 let package = Package(
-    name: "NonaConfig",
+    name: packageName,
     platforms: [
         .iOS(.v13)
     ],
     products: [
         .library(
-            name: "NonaConfig",
-            targets: ["NonaConfig"]
+            name: packageName,
+            targets: [packageName]
         ),
     ],
     targets: [
         .binaryTarget(
-            name: "NonaConfig",
-            // For local development/testing, point to the build folder
-            // For remote distribution, this would be a URL to a zipped XCFramework in a GitHub Release
-            path: "./sharedLogic/build/XCFrameworks/release/NonaConfig.xcframework"
-        ),
+            name: packageName,
+            url: remoteKotlinUrl,
+            checksum: remoteKotlinChecksum
+        )
+        ,
     ]
 )
