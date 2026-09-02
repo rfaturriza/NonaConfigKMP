@@ -1,0 +1,86 @@
+package com.nonaconfig
+
+import com.nonaconfig.internal.NonaConfigFetcher
+import com.nonaconfig.internal.NonaConfigStorage
+import com.russhwolf.multiplatform.settings.Settings
+import kotlinx.coroutines.*
+import kotlinx.datetime.Clock
+import kotlin.time.Duration
+
+class NonaConfig private constructor() {
+
+    private lateinit var apiKey: String
+    private lateinit var environmentId: String
+    private lateinit var storage: NonaConfigStorage
+    private lateinit var fetcher: NonaConfigFetcher
+    private var settings: NonaConfigSettings = NonaConfigSettings.Builder().build()
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    fun initialize(apiKey: String, environmentId: String) {
+        this.apiKey = apiKey
+        this.environmentId = environmentId
+        this.storage = NonaConfigStorage(Settings())
+        this.fetcher = NonaConfigFetcher(apiKey, environmentId)
+    }
+
+    fun setConfigSettings(settings: NonaConfigSettings) {
+        this.settings = settings
+    }
+
+    fun setDefaults(defaults: Map<String, Any>) {
+        val stringDefaults = defaults.mapValues { it.value.toString() }
+        storage.saveDefaults(stringDefaults)
+    }
+
+    suspend fun fetch(): Boolean = withContext(Dispatchers.Default) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        val lastFetch = storage.lastFetchTime
+        
+        if (now - lastFetch < settings.minimumFetchInterval.inWholeMilliseconds) {
+            return@withContext false
+        }
+
+        try {
+            val fetchedConfig = fetcher.fetchAll()
+            storage.saveFetchedConfig(fetchedConfig)
+            storage.lastFetchTime = now
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun activate(): Boolean {
+        val fetched = storage.getFetchedConfig()
+        if (fetched.isEmpty()) return false
+        storage.saveActiveConfig(fetched)
+        return true
+    }
+
+    suspend fun fetchAndActivate(): Boolean {
+        val fetched = fetch()
+        return if (fetched) {
+            activate()
+        } else {
+            false
+        }
+    }
+
+    fun getValue(key: String): NonaConfigValue {
+        val activeConfig = storage.getActiveConfig()
+        val value = activeConfig[key] 
+            ?: storage.getDefaults()[key]
+            ?: ""
+        return NonaConfigValueImpl(value)
+    }
+
+    fun getString(key: String): String = getValue(key).asString()
+    fun getBoolean(key: String): Boolean = getValue(key).asBoolean()
+    fun getLong(key: String): Long = getValue(key).asLong()
+    fun getDouble(key: String): Double = getValue(key).asDouble()
+
+    companion object {
+        val instance: NonaConfig by lazy { NonaConfig() }
+    }
+}
