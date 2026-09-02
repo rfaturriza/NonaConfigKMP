@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.ryware:nona-config:1.0.0")
+    implementation("com.github.rfaturriza:nona-config:1.0.0")
 }
 ```
 
