@@ -2,10 +2,10 @@ package com.nonaconfig
 
 import com.nonaconfig.internal.NonaConfigFetcher
 import com.nonaconfig.internal.NonaConfigStorage
+import com.nonaconfig.internal.currentTimeMillis
 import com.russhwolf.settings.Settings
 import io.ktor.client.*
 import kotlinx.coroutines.*
-import kotlinx.datetime.Clock
 import kotlinx.serialization.KSerializer
 
 class NonaConfig private constructor() {
@@ -47,7 +47,7 @@ class NonaConfig private constructor() {
     }
 
     suspend fun fetch(): Boolean = withContext(Dispatchers.Default) {
-        val now = Clock.System.now().toEpochMilliseconds()
+        val now = currentTimeMillis()
         val lastFetch = storage.lastFetchTime
         
         val interval = settings.minimumFetchInterval.inWholeMilliseconds

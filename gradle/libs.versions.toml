@@ -13,14 +13,12 @@ composeMultiplatform = "1.11.1"
 junit = "4.13.2"
 kotlin = "2.4.10"
 kotlinx-serialization = "1.11.0"
-kotlinxDatetime = "0.6.0"
 ktor = "3.5.2"
 material3 = "1.11.0-alpha07"
 multiplatformSettings = "1.3.0"
 kmmbridge = "1.2.1"
 skie = "0.10.14"
 secretsGradlePlugin = "2.0.1"
-kover = "0.8.3"
 kotlinx-coroutines = "1.10.1"
 
 [libraries]
@@ -48,7 +46,6 @@ ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negoti
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
 multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-test", version.ref = "multiplatformSettings" }
@@ -65,4 +62,3 @@ kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 kmmbridge = { id = "co.touchlab.kmmbridge", version.ref = "kmmbridge" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
 secretsGradlePlugin = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

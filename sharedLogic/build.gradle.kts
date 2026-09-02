@@ -9,8 +9,8 @@ plugins {
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.kmmbridge)
     alias(libs.plugins.skie)
-    alias(libs.plugins.kover)
     id("maven-publish")
+    id("jacoco")
 }
 
 group = "com.nonaconfig"
@@ -47,7 +47,6 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
-            implementation(libs.kotlinx.datetime)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
@@ -64,17 +63,26 @@ kotlin {
     }
 }
 
-kover {
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    group = "Reporting"
+    description = "Generate Jacoco coverage report for JVM tests"
+
+    dependsOn("jvmTest")
+
     reports {
-        total {
-            xml {
-                onCheck = true
-            }
-            html {
-                onCheck = true
-            }
-        }
+        xml.required.set(true)
+        html.required.set(true)
     }
+
+    val commonMainClasses = fileTree("${project.layout.buildDirectory.get().asFile}/classes/kotlin/jvm/main")
+
+    classDirectories.setFrom(commonMainClasses)
+    sourceDirectories.setFrom(files("src/commonMain/kotlin"))
+    executionData.setFrom(fileTree(project.layout.buildDirectory.get().asFile).include("jacoco/jvmTest.exec"))
 }
 
 kmmbridge {
