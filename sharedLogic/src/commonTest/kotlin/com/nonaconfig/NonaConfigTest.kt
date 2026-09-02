@@ -1,7 +1,5 @@
 package com.nonaconfig
 
-import com.nonaconfig.internal.NonaConfigFetcher
-import com.nonaconfig.internal.NonaConfigStorage
 import com.russhwolf.settings.MapSettings
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -33,8 +31,8 @@ class NonaConfigTest {
 
     @Test
     fun testDefaultsAndRetrieval() {
-        val nonaConfig = NonaConfig()
-        nonaConfig.initialize("key", "env")
+        val engine = MockEngine { respond("", HttpStatusCode.OK) }
+        val nonaConfig = createTestConfig(engine)
         
         nonaConfig.setDefaults(mapOf("key1" to "default", "key2" to true))
         assertEquals("default", nonaConfig.getString("key1"))
@@ -102,8 +100,8 @@ class NonaConfigTest {
 
     @Test
     fun testJsonRetrieval() {
-        val nonaConfig = NonaConfig()
-        nonaConfig.initialize("key", "env")
+        val engine = MockEngine { respond("", HttpStatusCode.OK) }
+        val nonaConfig = createTestConfig(engine)
         nonaConfig.setDefaults(mapOf("j" to "{\"key\":\"val\",\"value\":123}"))
         
         val data = nonaConfig.getJson("j", TestJson.serializer())
