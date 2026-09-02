@@ -7,9 +7,9 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.maven.publish)
     alias(libs.plugins.kmmbridge)
     alias(libs.plugins.skie)
-    id("maven-publish")
     id("jacoco")
 }
 
@@ -59,7 +59,6 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.multiplatform.settings.test)
             implementation(libs.ktor.client.mock)
-            implementation(libs.ktor.client.okhttp)
         }
     }
 }
