@@ -13,8 +13,8 @@ plugins {
     id("jacoco")
 }
 
-group = "com.nonaconfig"
-version = "1.0.0"
+group = "com.github.rfaturriza"
+version = "1.0.1"
 
 kotlin {
     jvm()
@@ -103,29 +103,24 @@ skie {
 }
 
 publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            afterEvaluate {
-                from(components["kotlin"])
+    publications.withType<MavenPublication> {
+        // Replace the default project name 'sharedLogic' with 'nona-config' in the artifact ID
+        artifactId = artifactId.replace(project.name, "nona-config")
+
+        pom {
+            name.set("Nona Config SDK")
+            description.set("A Kotlin Multiplatform SDK for Nona Config")
+            url.set("https://github.com/rfaturriza/NonaConfigKMP")
+            licenses {
+                license {
+                    name.set("The Apache License, Version 2.0")
+                    url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                }
             }
-            
-            artifactId = "nona-config"
-            
-            pom {
-                name.set("Nona Config SDK")
-                description.set("A Kotlin Multiplatform SDK for Nona Config")
-                url.set("https://github.com/rfaturriza/NonaConfigKMP")
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                    }
-                }
-                scm {
-                    connection.set("scm:git:github.com/rfaturriza/NonaConfigKMP.git")
-                    developerConnection.set("scm:git:ssh://github.com/rfaturriza/NonaConfigKMP.git")
-                    url.set("https://github.com/rfaturriza/NonaConfigKMP/tree/main")
-                }
+            scm {
+                connection.set("scm:git:github.com/rfaturriza/NonaConfigKMP.git")
+                developerConnection.set("scm:git:ssh://github.com/rfaturriza/NonaConfigKMP.git")
+                url.set("https://github.com/rfaturriza/NonaConfigKMP/tree/main")
             }
         }
     }
