@@ -28,7 +28,7 @@ plugins {
 }
 
 group = "io.github.rfaturriza"
-version = "1.0.2"
+version = "1.0.0"
 
 kotlin {
     jvm()

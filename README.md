@@ -16,7 +16,7 @@ Add the dependency directly to your `build.gradle.kts` (available on Maven Centr
 
 ```kotlin
 dependencies {
-    implementation("io.github.rfaturriza:nona-config:1.0.2")
+    implementation("io.github.rfaturriza:nona-config:1.0.0")
 }
 ```
 
