@@ -123,36 +123,36 @@ skie {
     }
 }
 
-publishing {
-    publications.withType<MavenPublication> {
-        // Replace the default project name 'sharedLogic' with 'nona-config' in the artifact ID
-        artifactId = artifactId.replace(project.name, "nona-config")
+mavenPublishing {
+    coordinates(group.toString(), "nona-config", version.toString())
 
-        pom {
-            name.set("Nona Config SDK")
-            description.set("A Kotlin Multiplatform SDK for Nona Config")
-            url.set("https://github.com/rfaturriza/NonaConfigKMP")
-            licenses {
-                license {
-                    name.set("The Apache License, Version 2.0")
-                    url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                }
-            }
-            scm {
-                connection.set("scm:git:github.com/rfaturriza/NonaConfigKMP.git")
-                developerConnection.set("scm:git:ssh://github.com/rfaturriza/NonaConfigKMP.git")
-                url.set("https://github.com/rfaturriza/NonaConfigKMP/tree/main")
+    publishToMavenCentral()
+
+    if (project.hasProperty("signing.keyId") || System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null) {
+        signAllPublications()
+    }
+
+    pom {
+        name.set("Nona Config SDK")
+        description.set("A Kotlin Multiplatform SDK for Nona Config")
+        url.set("https://github.com/rfaturriza/NonaConfigKMP")
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
             }
         }
-    }
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/rfaturriza/NonaConfigKMP")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+        developers {
+            developer {
+                id.set("rfaturriza")
+                name.set("Rizky Faturriza")
+                url.set("https://github.com/rfaturriza")
             }
+        }
+        scm {
+            connection.set("scm:git:github.com/rfaturriza/NonaConfigKMP.git")
+            developerConnection.set("scm:git:ssh://github.com/rfaturriza/NonaConfigKMP.git")
+            url.set("https://github.com/rfaturriza/NonaConfigKMP/tree/main")
         }
     }
 }

@@ -12,13 +12,9 @@ A Kotlin Multiplatform SDK for Nona Config, replicating core features of Firebas
 ## Installation
 
 ### Kotlin Multiplatform / Android
-Add the dependency to your `build.gradle.kts` (via JitPack for now):
+Add the dependency directly to your `build.gradle.kts` (available on Maven Central, no extra repository or credentials required):
 
 ```kotlin
-repositories {
-    maven { url = uri("https://jitpack.io") }
-}
-
 dependencies {
     implementation("com.github.rfaturriza:nona-config:1.0.0")
 }
