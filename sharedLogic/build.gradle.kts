@@ -10,6 +10,12 @@ if (System.getenv("GITHUB_TOKEN") != null && !project.hasProperty("GITHUB_PUBLIS
 if (System.getenv("GITHUB_REPOSITORY") != null && !project.hasProperty("GITHUB_REPO")) {
     rootProject.extra["GITHUB_REPO"] = System.getenv("GITHUB_REPOSITORY")
 }
+if (System.getenv("MAVEN_CENTRAL_USERNAME") != null && !project.hasProperty("mavenCentralUsername")) {
+    extra["mavenCentralUsername"] = System.getenv("MAVEN_CENTRAL_USERNAME")
+}
+if (System.getenv("MAVEN_CENTRAL_PASSWORD") != null && !project.hasProperty("mavenCentralPassword")) {
+    extra["mavenCentralPassword"] = System.getenv("MAVEN_CENTRAL_PASSWORD")
+}
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
