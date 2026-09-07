@@ -22,7 +22,7 @@ plugins {
 }
 
 group = "com.github.rfaturriza"
-version = "1.0.0"
+version = "1.0.1"
 
 kotlin {
     jvm()
@@ -153,6 +153,19 @@ mavenPublishing {
             connection.set("scm:git:github.com/rfaturriza/NonaConfigKMP.git")
             developerConnection.set("scm:git:ssh://github.com/rfaturriza/NonaConfigKMP.git")
             url.set("https://github.com/rfaturriza/NonaConfigKMP/tree/main")
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/rfaturriza/NonaConfigKMP")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
         }
     }
 }
