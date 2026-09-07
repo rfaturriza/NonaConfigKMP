@@ -126,7 +126,9 @@ skie {
 mavenPublishing {
     coordinates(group.toString(), "nona-config", version.toString())
 
-    publishToMavenCentral()
+    if (project.hasProperty("mavenCentralUsername") || System.getenv("MAVEN_CENTRAL_USERNAME") != null) {
+        publishToMavenCentral()
+    }
 
     if (project.hasProperty("signing.keyId") || System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null) {
         signAllPublications()
