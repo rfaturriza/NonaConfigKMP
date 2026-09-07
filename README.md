@@ -128,8 +128,6 @@ Task {
 }
 ```
 
-## Security Best Practices
-
 ## Distribution
 
 ### Android (AAR)
