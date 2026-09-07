@@ -10,7 +10,10 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.test.*
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import com.nonaconfig.internal.currentTimeMillis
 
 @Serializable
 data class TestJson(val key: String, val value: Int)
@@ -124,5 +127,106 @@ class NonaConfigTest {
         
         assertTrue(NonaConfigValueImpl("true").asBoolean())
         assertTrue(NonaConfigValueImpl("1").asBoolean())
+    }
+
+    @Test
+    fun testPlatform() {
+        val platform = getPlatform()
+        assertTrue(platform.name.isNotBlank())
+    }
+
+    @Test
+    fun testCompanionInstance() {
+        NonaConfig.resetInstance()
+        val inst1 = NonaConfig.instance
+        val inst2 = NonaConfig.instance
+        assertSame(inst1, inst2)
+        NonaConfig.resetInstance()
+    }
+
+    @Test
+    fun testFetchNotModifiedResult() = runTest {
+        val engine = MockEngine { _ ->
+            respond(content = "", status = HttpStatusCode.NotModified)
+        }
+        val nonaConfig = createTestConfig(engine)
+        assertTrue(nonaConfig.fetch())
+    }
+
+    @Test
+    fun testFetchErrorResult() = runTest {
+        val engine = MockEngine { _ ->
+            respond(content = "Error", status = HttpStatusCode.BadRequest)
+        }
+        val nonaConfig = createTestConfig(engine)
+        assertFalse(nonaConfig.fetch())
+    }
+
+    @Test
+    fun testActivateEmpty() {
+        val engine = MockEngine { respond("", HttpStatusCode.OK) }
+        val nonaConfig = createTestConfig(engine)
+        assertFalse(nonaConfig.activate())
+    }
+
+    @Test
+    fun testNumericRetrieval() {
+        val engine = MockEngine { respond("", HttpStatusCode.OK) }
+        val nonaConfig = createTestConfig(engine)
+        nonaConfig.setDefaults(mapOf("longKey" to 456L, "doubleKey" to 78.9))
+        assertEquals(456L, nonaConfig.getLong("longKey"))
+        assertEquals(78.9, nonaConfig.getDouble("doubleKey"))
+    }
+
+    @Test
+    fun testByteArrayOnValue() {
+        val value = NonaConfigValueImpl("test")
+        assertContentEquals("test".encodeToByteArray(), value.asByteArray())
+    }
+
+    @Test
+    fun testSettingsBuilder() {
+        val settings = NonaConfigSettings.Builder()
+            .setMinimumFetchInterval(5.minutes)
+            .setFetchTimeout(30.seconds)
+            .setReleaseVersion("2.0.0")
+            .build()
+        assertEquals(5.minutes, settings.minimumFetchInterval)
+        assertEquals(30.seconds, settings.fetchTimeout)
+        assertEquals("2.0.0", settings.releaseVersion)
+    }
+
+    @Test
+    fun testRealInitialize() {
+        val config = NonaConfig()
+        config.initialize("test-key", "test-env")
+        assertNotNull(config)
+    }
+
+    @Test
+    fun testFetchAndActivateFailure() = runTest {
+        val engine = MockEngine { _ ->
+            respond(content = "Error", status = HttpStatusCode.InternalServerError)
+        }
+        val nonaConfig = createTestConfig(engine)
+        assertFalse(nonaConfig.fetchAndActivate())
+    }
+
+    @Test
+    fun testSettingsDefaultBuilder() {
+        val settings = NonaConfigSettings.Builder().build()
+        assertEquals(12.hours, settings.minimumFetchInterval)
+        assertEquals(1.minutes, settings.fetchTimeout)
+        assertNull(settings.releaseVersion)
+
+        val directSettings = NonaConfigSettings(5.minutes, 1.minutes, "1.0")
+        assertEquals(5.minutes, directSettings.minimumFetchInterval)
+        assertEquals(1.minutes, directSettings.fetchTimeout)
+        assertEquals("1.0", directSettings.releaseVersion)
+    }
+
+    @Test
+    fun testTimeUtils() {
+        assertTrue(currentTimeMillis() > 0)
     }
 }

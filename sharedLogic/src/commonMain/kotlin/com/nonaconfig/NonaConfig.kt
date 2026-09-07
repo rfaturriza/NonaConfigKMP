@@ -27,7 +27,7 @@ class NonaConfig internal constructor() {
         this.apiKey = apiKey
         this.environmentId = environmentId
         this.storage = NonaConfigStorage(Settings())
-        this.fetcher = NonaConfigFetcher(apiKey, environmentId)
+        this.fetcher = NonaConfigFetcher(apiKey, environmentId, "localhost")
     }
 
     internal fun initializeForTest(
@@ -39,7 +39,7 @@ class NonaConfig internal constructor() {
         this.apiKey = apiKey
         this.environmentId = environmentId
         this.storage = NonaConfigStorage(settings)
-        this.fetcher = NonaConfigFetcher(apiKey, environmentId, httpClient = httpClient)
+        this.fetcher = NonaConfigFetcher(apiKey, environmentId, httpClient = httpClient, baseUrl = "localhost")
     }
 
     fun setConfigSettings(settings: NonaConfigSettings) {

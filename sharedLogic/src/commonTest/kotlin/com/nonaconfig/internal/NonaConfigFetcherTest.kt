@@ -1,13 +1,19 @@
 package com.nonaconfig.internal
 
-import io.ktor.client.*
-import io.ktor.client.engine.mock.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class NonaConfigFetcherTest {
 
@@ -17,7 +23,7 @@ class NonaConfigFetcherTest {
                 json(Json { ignoreUnknownKeys = true })
             }
         }
-        return NonaConfigFetcher("key", "env", httpClient = client)
+        return NonaConfigFetcher("key", "env", httpClient = client, baseUrl = "localhost")
     }
 
     @Test
@@ -84,5 +90,26 @@ class NonaConfigFetcherTest {
         }
         val fetcher = createFetcher(engine)
         fetcher.fetchAll(null, version = "1.0.0")
+    }
+
+    @Test
+    fun testFetchResultDataClassMethods() {
+        val s1 = NonaConfigFetcher.FetchResult.Success(mapOf("a" to "b"), "tag")
+        val (config, tag) = s1
+        assertEquals(mapOf("a" to "b"), config)
+        assertEquals("tag", tag)
+        assertEquals(s1, s1.copy())
+        assertEquals(s1.hashCode(), s1.copy().hashCode())
+        assertTrue(s1.toString().contains("Success"))
+
+        val ex = Exception("fail")
+        val e1 = NonaConfigFetcher.FetchResult.Error(ex)
+        assertEquals(ex, e1.exception)
+        assertEquals(e1, e1.copy())
+        assertEquals(e1.hashCode(), e1.copy().hashCode())
+        assertTrue(e1.toString().contains("Error"))
+
+        val notMod = NonaConfigFetcher.FetchResult.NotModified
+        assertNotNull(notMod.toString())
     }
 }

@@ -54,7 +54,11 @@ class NonaConfigStorageTest {
         // Manually corrupting settings to test exception handling
         val settings = MapSettings()
         settings.putString("nona_fetched_config", "{invalid json")
+        settings.putString("nona_active_config", "{invalid json")
+        settings.putString("nona_defaults", "{invalid json")
         val corruptedStorage = NonaConfigStorage(settings)
         assertEquals(emptyMap(), corruptedStorage.getFetchedConfig())
+        assertEquals(emptyMap(), corruptedStorage.getActiveConfig())
+        assertEquals(emptyMap(), corruptedStorage.getDefaults())
     }
 }

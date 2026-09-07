@@ -7,7 +7,7 @@ import kotlin.time.Duration.Companion.hours
 class NonaConfigSettings internal constructor(
     val minimumFetchInterval: Duration,
     val fetchTimeout: Duration,
-    val releaseVersion: String? = null
+    val releaseVersion: String?
 ) {
     class Builder {
         private var minimumFetchInterval: Duration = 12.hours

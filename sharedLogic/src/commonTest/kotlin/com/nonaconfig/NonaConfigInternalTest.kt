@@ -55,7 +55,7 @@ class NonaConfigInternalTest {
                 json(Json { ignoreUnknownKeys = true })
             }
         }
-        val fetcher = NonaConfigFetcher("api-key", "env", httpClient = client)
+        val fetcher = NonaConfigFetcher("api-key", "env", httpClient = client, baseUrl = "localhost")
         val result = fetcher.fetchAll(null)
         
         assertTrue(result is NonaConfigFetcher.FetchResult.Success)
