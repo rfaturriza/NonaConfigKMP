@@ -27,7 +27,7 @@ plugins {
     id("jacoco")
 }
 
-group = "com.github.rfaturriza"
+group = "io.github.rfaturriza"
 version = "1.0.2"
 
 kotlin {
