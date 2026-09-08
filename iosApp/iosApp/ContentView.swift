@@ -1,20 +1,30 @@
 import SwiftUI
-import SharedUI
-
-struct ComposeView: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> UIViewController {
-        // You should provide your API Key here, e.g. from a .xcconfig or Environment variable
-        let apiKey = ProcessInfo.processInfo.environment["NONA_API_KEY"] ?? "dummy-key"
-        return MainViewControllerKt.MainViewController(apiKey: apiKey)
-    }
-
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
-}
 
 struct ContentView: View {
+    @State private var selectedTab = 0
+
+    private var apiKey: String {
+        (Bundle.main.object(forInfoDictionaryKey: "NONA_API_KEY") as? String)
+            .flatMap { $0.isEmpty ? nil : $0 }
+            ?? ProcessInfo.processInfo.environment["NONA_API_KEY"]
+            ?? ""
+    }
+
     var body: some View {
-        ComposeView()
-            .ignoresSafeArea(.keyboard) // Compose has own keyboard handler
+        TabView(selection: $selectedTab) {
+            CMPComposeView(apiKey: apiKey)
+                .ignoresSafeArea(.keyboard)
+                .tabItem {
+                    Label("Compose (sharedUI)", systemImage: "paintbrush")
+                }
+                .tag(0)
+
+            NativeSwiftUIView()
+                .tabItem {
+                    Label("Native Swift (sharedLogic)", systemImage: "swift")
+                }
+                .tag(1)
+        }
     }
 }
 

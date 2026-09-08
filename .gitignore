@@ -17,3 +17,11 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+
+# iOS
+/iosApp/DerivedData
+/iosApp/.derived-data-log-**
+
+# Secrets
+Secrets.xcconfig
+*.local.xcconfig
