@@ -1,4 +1,9 @@
 # Nona Config SDK
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.rfaturriza/nona-config.svg)](https://central.sonatype.com/artifact/io.github.rfaturriza/nona-config)
+[![GitHub Release](https://img.shields.io/github/v/release/rfaturriza/NonaConfigKMP.svg)](https://github.com/rfaturriza/NonaConfigKMP/releases)
+[![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-blue.svg)](https://kotlinlang.org/docs/multiplatform.html)
+[![Swift Package Manager](https://img.shields.io/badge/SPM-compatible-orange.svg)](https://swift.org/package-manager/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.md)
 [![codecov](https://codecov.io/gh/rfaturriza/NonaConfigKMP/branch/main/graph/badge.svg)](https://codecov.io/gh/rfaturriza/NonaConfigKMP)
 
 A Kotlin Multiplatform SDK for Nona Config, replicating core features of Firebase Remote Config: defaults, fetching, caching, and activation.
