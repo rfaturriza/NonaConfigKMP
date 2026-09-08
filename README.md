@@ -34,12 +34,24 @@ dependencies {
 4. Add `NonaConfig` to your app target.
 
 #### Option B: `Package.swift`
-If your project uses a `Package.swift` manifest, add the dependency:
+If your project uses a `Package.swift` manifest, add the dependency to your `Package` definition:
 
 ```swift
-dependencies: [
-    .package(url: "https://github.com/rfaturriza/NonaConfigKMP", from: "1.0.1")
-]
+// Package.swift
+let package = Package(
+    name: "MyApp",
+    dependencies: [
+        .package(url: "https://github.com/rfaturriza/NonaConfigKMP", from: "1.0.1")
+    ],
+    targets: [
+        .target(
+            name: "MyApp",
+            dependencies: [
+                .product(name: "NonaConfig", package: "NonaConfigKMP")
+            ]
+        )
+    ]
+)
 ```
 
 ## Usage
