@@ -21,11 +21,11 @@ dependencies {
 }
 
 android {
-    namespace = "com.nonaconfig"
+    namespace = "com.nonaconfig.android"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.nonaconfig"
+        applicationId = "com.nonaconfig.android"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
