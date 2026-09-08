@@ -62,6 +62,7 @@ val theme = nonaConfig.getValue("theme_settings").asJson(ThemeConfig.serializer(
 
 ```kotlin
 val settings = NonaConfigSettings.Builder()
+    .setBaseUrl("https://your-custom-backend.com") // Optional: Custom server URL
     .setMinimumFetchInterval(1.hours)
     .setReleaseVersion("1.1.x") // Pin to a specific release line
     .build()

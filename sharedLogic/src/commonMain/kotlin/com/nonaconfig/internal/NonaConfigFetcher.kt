@@ -12,7 +12,7 @@ import io.ktor.http.*
 internal class NonaConfigFetcher(
     private val apiKey: String,
     private val environmentId: String,
-    private val baseUrl: String,
+    private val baseUrl: String = "https://nona-config.ryware.io",
     httpClient: HttpClient? = null
 ) {
     private val client = httpClient ?: HttpClient {

@@ -190,10 +190,12 @@ class NonaConfigTest {
             .setMinimumFetchInterval(5.minutes)
             .setFetchTimeout(30.seconds)
             .setReleaseVersion("2.0.0")
+            .setBaseUrl("https://custom.nona.io")
             .build()
         assertEquals(5.minutes, settings.minimumFetchInterval)
         assertEquals(30.seconds, settings.fetchTimeout)
         assertEquals("2.0.0", settings.releaseVersion)
+        assertEquals("https://custom.nona.io", settings.baseUrl)
     }
 
     @Test
@@ -218,11 +220,33 @@ class NonaConfigTest {
         assertEquals(12.hours, settings.minimumFetchInterval)
         assertEquals(1.minutes, settings.fetchTimeout)
         assertNull(settings.releaseVersion)
+        assertEquals("https://nona-config.ryware.io", settings.baseUrl)
 
-        val directSettings = NonaConfigSettings(5.minutes, 1.minutes, "1.0")
+        val directSettings = NonaConfigSettings(5.minutes, 1.minutes, "1.0", "https://custom.nona.io")
         assertEquals(5.minutes, directSettings.minimumFetchInterval)
         assertEquals(1.minutes, directSettings.fetchTimeout)
         assertEquals("1.0", directSettings.releaseVersion)
+        assertEquals("https://custom.nona.io", directSettings.baseUrl)
+    }
+
+    @Test
+    fun testSetConfigSettingsUpdatesFetcher() = runTest {
+        val engine = MockEngine { request ->
+            assertTrue(request.url.toString().startsWith("https://custom.nona.io/api/env"))
+            respond(
+                content = "{\"key\": \"value\"}",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+        val config = createTestConfig(engine)
+        config.setConfigSettings(
+            NonaConfigSettings.Builder()
+                .setBaseUrl("https://custom.nona.io")
+                .setMinimumFetchInterval(0.seconds)
+                .build()
+        )
+        assertTrue(config.fetch())
     }
 
     @Test

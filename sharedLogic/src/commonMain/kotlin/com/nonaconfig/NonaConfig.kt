@@ -19,6 +19,7 @@ class NonaConfig internal constructor() {
     private lateinit var environmentId: String
     private lateinit var storage: NonaConfigStorage
     private lateinit var fetcher: NonaConfigFetcher
+    private var testHttpClient: HttpClient? = null
     private var settings: NonaConfigSettings = NonaConfigSettings.Builder().build()
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -27,7 +28,12 @@ class NonaConfig internal constructor() {
         this.apiKey = apiKey
         this.environmentId = environmentId
         this.storage = NonaConfigStorage(Settings())
-        this.fetcher = NonaConfigFetcher(apiKey, environmentId, "localhost")
+        this.fetcher = NonaConfigFetcher(
+            apiKey = apiKey,
+            environmentId = environmentId,
+            baseUrl = settings.baseUrl,
+            httpClient = testHttpClient
+        )
     }
 
     internal fun initializeForTest(
@@ -38,12 +44,26 @@ class NonaConfig internal constructor() {
     ) {
         this.apiKey = apiKey
         this.environmentId = environmentId
+        this.testHttpClient = httpClient
         this.storage = NonaConfigStorage(settings)
-        this.fetcher = NonaConfigFetcher(apiKey, environmentId, httpClient = httpClient, baseUrl = "localhost")
+        this.fetcher = NonaConfigFetcher(
+            apiKey = apiKey,
+            environmentId = environmentId,
+            baseUrl = this.settings.baseUrl,
+            httpClient = httpClient
+        )
     }
 
     fun setConfigSettings(settings: NonaConfigSettings) {
         this.settings = settings
+        if (::apiKey.isInitialized && ::environmentId.isInitialized) {
+            this.fetcher = NonaConfigFetcher(
+                apiKey = apiKey,
+                environmentId = environmentId,
+                baseUrl = settings.baseUrl,
+                httpClient = testHttpClient
+            )
+        }
     }
 
     fun setDefaults(defaults: Map<String, Any>) {
