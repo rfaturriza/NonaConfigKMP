@@ -15,6 +15,13 @@ import kotlin.experimental.ExperimentalObjCName
 @ObjCName("NonaConfigClient")
 class NonaConfig internal constructor() {
 
+    enum class FetchStatus {
+        SUCCESS_NEW_DATA,
+        SUCCESS_NOT_MODIFIED,
+        THROTTLED,
+        ERROR
+    }
+
     private lateinit var apiKey: String
     private lateinit var environmentId: String
     private lateinit var baseUrl: String
@@ -24,6 +31,15 @@ class NonaConfig internal constructor() {
     private var settings: NonaConfigSettings = NonaConfigSettings.Builder().build()
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    val lastETag: String?
+        get() = if (::storage.isInitialized) storage.eTag else null
+
+    fun clearETag() {
+        if (::storage.isInitialized) {
+            storage.eTag = null
+        }
+    }
 
     fun initialize(apiKey: String, environmentId: String, baseUrl: String) {
         this.apiKey = apiKey
@@ -76,13 +92,13 @@ class NonaConfig internal constructor() {
         storage.saveDefaults(stringDefaults)
     }
 
-    suspend fun fetch(): Boolean = withContext(Dispatchers.Default) {
+    suspend fun fetchWithStatus(): FetchStatus = withContext(Dispatchers.Default) {
         val now = currentTimeMillis()
         val lastFetch = storage.lastFetchTime
         
         val interval = settings.minimumFetchInterval.inWholeMilliseconds
         if (now - lastFetch < interval) {
-            return@withContext false
+            return@withContext FetchStatus.THROTTLED
         }
 
         when (val result = fetcher.fetchAll(storage.eTag, settings.releaseVersion)) {
@@ -90,15 +106,27 @@ class NonaConfig internal constructor() {
                 storage.saveFetchedConfig(result.config)
                 storage.eTag = result.eTag
                 storage.lastFetchTime = now
-                true
+                FetchStatus.SUCCESS_NEW_DATA
             }
             is NonaConfigFetcher.FetchResult.NotModified -> {
                 storage.lastFetchTime = now
-                true
+                FetchStatus.SUCCESS_NOT_MODIFIED
             }
             is NonaConfigFetcher.FetchResult.Error -> {
-                false
+                FetchStatus.ERROR
             }
+        }
+    }
+
+    suspend fun fetch(): Boolean {
+        val status = fetchWithStatus()
+        return status == FetchStatus.SUCCESS_NEW_DATA || status == FetchStatus.SUCCESS_NOT_MODIFIED
+    }
+
+    fun fetch(onComplete: ((Boolean) -> Unit)? = null) {
+        scope.launch {
+            val result = fetch()
+            onComplete?.invoke(result)
         }
     }
 
@@ -109,12 +137,34 @@ class NonaConfig internal constructor() {
         return true
     }
 
+    suspend fun fetchAndActivateWithStatus(): FetchStatus {
+        val status = fetchWithStatus()
+        if (status == FetchStatus.SUCCESS_NEW_DATA) {
+            activate()
+        }
+        return status
+    }
+
+    fun fetchAndActivateWithStatus(onComplete: (FetchStatus) -> Unit) {
+        scope.launch {
+            val status = fetchAndActivateWithStatus()
+            onComplete(status)
+        }
+    }
+
     suspend fun fetchAndActivate(): Boolean {
         val fetched = fetch()
         return if (fetched) {
             activate()
         } else {
             false
+        }
+    }
+
+    fun fetchAndActivate(onComplete: ((Boolean) -> Unit)? = null) {
+        scope.launch {
+            val result = fetchAndActivate()
+            onComplete?.invoke(result)
         }
     }
 

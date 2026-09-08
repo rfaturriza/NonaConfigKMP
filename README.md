@@ -21,7 +21,7 @@ Add the dependency directly to your `build.gradle.kts` (available on Maven Centr
 
 ```kotlin
 dependencies {
-    implementation("io.github.rfaturriza:nona-config:1.0.1")
+    implementation("io.github.rfaturriza:nona-config:1.0.2")
 }
 ```
 
@@ -30,7 +30,7 @@ dependencies {
 #### Option A: Xcode UI
 1. In Xcode, select **File > Add Package Dependencies...**
 2. Enter the repository URL: `https://github.com/rfaturriza/NonaConfigKMP`
-3. Set the **Dependency Rule** to **Up to Next Major Version** starting from `1.0.1`.
+3. Set the **Dependency Rule** to **Up to Next Major Version** starting from `1.0.2`.
 4. Add `NonaConfig` to your app target.
 
 #### Option B: `Package.swift`
@@ -41,7 +41,7 @@ If your project uses a `Package.swift` manifest, add the dependency to your `Pac
 let package = Package(
     name: "MyApp",
     dependencies: [
-        .package(url: "https://github.com/rfaturriza/NonaConfigKMP", from: "1.0.1")
+        .package(url: "https://github.com/rfaturriza/NonaConfigKMP", from: "1.0.2")
     ],
     targets: [
         .target(
@@ -78,12 +78,40 @@ nonaConfig.setDefaults(mapOf(
 
 ### 3. Fetching and Activating
 
+#### Coroutine (Suspend) or Callback-based
 ```kotlin
-coroutineScope.launch {
-    // Fetch from remote and activate locally
-    // Uses ETags for efficient fetching (only downloads if changed)
-    nonaConfig.fetchAndActivate()
+// Option A: Callback-based non-suspend function (ideal for UI & non-coroutine callers)
+nonaConfig.fetchAndActivate { success ->
+    if (success) {
+        val message = nonaConfig.getString("welcome_message")
+    }
 }
+
+// Option B: Coroutine suspend function
+coroutineScope.launch {
+    val success = nonaConfig.fetchAndActivate()
+}
+```
+
+#### Status-Aware Fetching & ETag Management
+You can inspect the detailed fetch status (e.g. distinguishing `200 OK` from `304 Not Modified`), read the current ETag, or clear it to force a fresh fetch:
+
+```kotlin
+// Fetch with explicit status result
+nonaConfig.fetchAndActivateWithStatus { status ->
+    when (status) {
+        NonaConfig.FetchStatus.SUCCESS_NEW_DATA -> println("HTTP 200 OK - Downloaded new payload")
+        NonaConfig.FetchStatus.SUCCESS_NOT_MODIFIED -> println("HTTP 304 - ETag matched, using cached config")
+        NonaConfig.FetchStatus.THROTTLED -> println("Fetch throttled by minimum fetch interval")
+        NonaConfig.FetchStatus.ERROR -> println("Fetch failed")
+    }
+}
+
+// Inspect active ETag
+val currentETag: String? = nonaConfig.lastETag
+
+// Clear ETag to force unconditional fetch on next request (omits If-None-Match)
+nonaConfig.clearETag()
 ```
 
 ### 4. Retrieving Values

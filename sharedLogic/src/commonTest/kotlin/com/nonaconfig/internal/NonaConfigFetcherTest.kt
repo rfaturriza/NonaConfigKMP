@@ -48,6 +48,32 @@ class NonaConfigFetcherTest {
     }
 
     @Test
+    fun testFetchSuccessObjectWrappedValues() = runTest {
+        val engine = MockEngine { _ ->
+            respond(
+                content = """
+                {
+                  "app_version": {"value": "4.17.8", "contentType": "text"},
+                  "is_force_update": {"value": "false", "contentType": "boolean"},
+                  "plain_string": "simple"
+                }
+                """.trimIndent(),
+                status = HttpStatusCode.OK,
+                headers = headersOf(
+                    HttpHeaders.ContentType to listOf("application/json")
+                )
+            )
+        }
+        val fetcher = createFetcher(engine)
+        val result = fetcher.fetchAll(null)
+
+        assertTrue(result is NonaConfigFetcher.FetchResult.Success)
+        assertEquals("4.17.8", result.config["app_version"])
+        assertEquals("false", result.config["is_force_update"])
+        assertEquals("simple", result.config["plain_string"])
+    }
+
+    @Test
     fun testFetchNotModified() = runTest {
         val engine = MockEngine { request ->
             assertEquals("etag123", request.headers[HttpHeaders.IfNoneMatch])

@@ -63,6 +63,28 @@ class NonaConfigTest {
     }
 
     @Test
+    fun testNonSuspendCallbackFetchAndActivate() = runTest {
+        val engine = MockEngine { _ ->
+            respond(
+                content = "{\"key1\": \"remote\"}",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+        val nonaConfig = createTestConfig(engine)
+        nonaConfig.setDefaults(mapOf("key1" to "default"))
+
+        nonaConfig.fetch { success ->
+            assertTrue(success)
+        }
+
+        nonaConfig.fetchAndActivate { success ->
+            assertTrue(success)
+            assertEquals("remote", nonaConfig.getString("key1"))
+        }
+    }
+
+    @Test
     fun testFetchThrottling() = runTest {
         val engine = MockEngine { _ ->
             respond(
