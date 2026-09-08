@@ -16,8 +16,25 @@ Add the dependency directly to your `build.gradle.kts` (available on Maven Centr
 
 ```kotlin
 dependencies {
-    implementation("io.github.rfaturriza:nona-config:1.0.0")
+    implementation("io.github.rfaturriza:nona-config:1.0.1")
 }
+```
+
+### iOS (Swift Package Manager)
+
+#### Option A: Xcode UI
+1. In Xcode, select **File > Add Package Dependencies...**
+2. Enter the repository URL: `https://github.com/rfaturriza/NonaConfigKMP`
+3. Set the **Dependency Rule** to **Up to Next Major Version** starting from `1.0.1`.
+4. Add `NonaConfig` to your app target.
+
+#### Option B: `Package.swift`
+If your project uses a `Package.swift` manifest, add the dependency:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/rfaturriza/NonaConfigKMP", from: "1.0.1")
+]
 ```
 
 ## Usage
@@ -142,12 +159,12 @@ The library is configured for Maven publication. To publish to a local repositor
 ```
 
 ### iOS (Swift Package Manager)
-The library provides a `Package.swift` for SPM integration.
-1. Build the XCFramework:
-   ```bash
-   ./gradlew :sharedLogic:assembleXCFramework
-   ```
-2. In Xcode, go to **File > Add Packages...** and point to this repository.
+Releases automatically publish binary XCFramework artifacts and update `Package.swift` via KMMBridge during CI.
+
+To test building the XCFramework locally:
+```bash
+./gradlew :sharedLogic:assembleXCFramework
+```
 
 ## License
 Apache License 2.0
