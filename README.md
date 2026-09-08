@@ -163,7 +163,27 @@ NonaConfig.instance.initialize(
 ```
 
 ### iOS (Swift)
-In iOS, the main class is renamed to `NonaConfigClient` for better Swift integration.
+Do not hardcode your API key. Use a Git-ignored `Secrets.xcconfig` file included in `Config.xcconfig`.
+
+**Secrets.xcconfig** (Git ignored)
+```properties
+NONA_API_KEY=your_actual_key
+```
+
+**Config.xcconfig** (Tracked in Git)
+```properties
+#include? "Secrets.xcconfig"
+
+TEAM_ID=
+PRODUCT_NAME=NonaConfigKMP
+PRODUCT_BUNDLE_IDENTIFIER=com.nonaconfig.NonaConfigKMP$(TEAM_ID)
+```
+
+**Info.plist**
+```xml
+<key>NONA_API_KEY</key>
+<string>$(NONA_API_KEY)</string>
+```
 
 **Swift Initialization**
 ```swift
@@ -171,8 +191,12 @@ import NonaConfig // The name of your framework
 
 let client = NonaConfigClient.companion.instance
 
-// Securely getting the key from Environment or .xcconfig
-let apiKey = ProcessInfo.processInfo.environment["NONA_API_KEY"] ?? "default-key"
+// Securely getting the key from Info.plist or Environment
+let apiKey = (Bundle.main.object(forInfoDictionaryKey: "NONA_API_KEY") as? String)
+    .flatMap { $0.isEmpty ? nil : $0 }
+    ?? ProcessInfo.processInfo.environment["NONA_API_KEY"]
+    ?? ""
+
 client.initialize(apiKey: apiKey, environmentId: "production", baseUrl: "https://your-config-server.com")
 ```
 
