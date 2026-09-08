@@ -26,7 +26,11 @@ dependencies {
 
 ```kotlin
 val nonaConfig = NonaConfig.instance
-nonaConfig.initialize(apiKey = "your-api-key", environmentId = "production")
+nonaConfig.initialize(
+    apiKey = "your-api-key",
+    environmentId = "production",
+    baseUrl = "https://your-config-server.com"
+)
 ```
 
 ### 2. Setting Defaults
@@ -89,7 +93,11 @@ plugins {
 
 **MainActivity.kt**
 ```kotlin
-NonaConfig.instance.initialize(BuildConfig.NONA_API_KEY, "production")
+NonaConfig.instance.initialize(
+    apiKey = BuildConfig.NONA_API_KEY,
+    environmentId = "production",
+    baseUrl = "https://your-config-server.com"
+)
 ```
 
 ### iOS (Swift)
@@ -103,7 +111,7 @@ let client = NonaConfigClient.companion.instance
 
 // Securely getting the key from Environment or .xcconfig
 let apiKey = ProcessInfo.processInfo.environment["NONA_API_KEY"] ?? "default-key"
-client.initialize(apiKey: apiKey, environmentId: "production")
+client.initialize(apiKey: apiKey, environmentId: "production", baseUrl: "https://your-config-server.com")
 ```
 
 **Swift Usage**

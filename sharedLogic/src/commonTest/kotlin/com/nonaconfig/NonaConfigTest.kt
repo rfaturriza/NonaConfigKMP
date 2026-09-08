@@ -28,7 +28,7 @@ class NonaConfigTest {
                 json(Json { ignoreUnknownKeys = true })
             }
         }
-        nonaConfig.initializeForTest("key", "env", settings, client)
+        nonaConfig.initializeForTest("key", "env", "http://localhost", settings, client)
         return nonaConfig
     }
 
@@ -201,7 +201,7 @@ class NonaConfigTest {
     @Test
     fun testRealInitialize() {
         val config = NonaConfig()
-        config.initialize("test-key", "test-env")
+        config.initialize("test-key", "test-env", "https://test.nona.io")
         assertNotNull(config)
     }
 
@@ -220,7 +220,7 @@ class NonaConfigTest {
         assertEquals(12.hours, settings.minimumFetchInterval)
         assertEquals(1.minutes, settings.fetchTimeout)
         assertNull(settings.releaseVersion)
-        assertEquals("https://nona-config.ryware.io", settings.baseUrl)
+        assertNull(settings.baseUrl)
 
         val directSettings = NonaConfigSettings(5.minutes, 1.minutes, "1.0", "https://custom.nona.io")
         assertEquals(5.minutes, directSettings.minimumFetchInterval)

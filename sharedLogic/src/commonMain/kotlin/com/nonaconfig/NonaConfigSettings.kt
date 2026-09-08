@@ -8,13 +8,13 @@ class NonaConfigSettings internal constructor(
     val minimumFetchInterval: Duration,
     val fetchTimeout: Duration,
     val releaseVersion: String?,
-    val baseUrl: String
+    val baseUrl: String?
 ) {
     class Builder {
         private var minimumFetchInterval: Duration = 12.hours
         private var fetchTimeout: Duration = 1.minutes
         private var releaseVersion: String? = null
-        private var baseUrl: String = "https://nona-config.ryware.io"
+        private var baseUrl: String? = null
 
         fun setMinimumFetchInterval(interval: Duration) = apply {
             this.minimumFetchInterval = interval
@@ -28,7 +28,7 @@ class NonaConfigSettings internal constructor(
             this.releaseVersion = version
         }
 
-        fun setBaseUrl(baseUrl: String) = apply {
+        fun setBaseUrl(baseUrl: String?) = apply {
             this.baseUrl = baseUrl
         }
 

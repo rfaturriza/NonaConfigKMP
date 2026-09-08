@@ -17,6 +17,7 @@ class NonaConfig internal constructor() {
 
     private lateinit var apiKey: String
     private lateinit var environmentId: String
+    private lateinit var baseUrl: String
     private lateinit var storage: NonaConfigStorage
     private lateinit var fetcher: NonaConfigFetcher
     private var testHttpClient: HttpClient? = null
@@ -24,14 +25,15 @@ class NonaConfig internal constructor() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    fun initialize(apiKey: String, environmentId: String) {
+    fun initialize(apiKey: String, environmentId: String, baseUrl: String) {
         this.apiKey = apiKey
         this.environmentId = environmentId
+        this.baseUrl = baseUrl
         this.storage = NonaConfigStorage(Settings())
         this.fetcher = NonaConfigFetcher(
             apiKey = apiKey,
             environmentId = environmentId,
-            baseUrl = settings.baseUrl,
+            baseUrl = settings.baseUrl ?: baseUrl,
             httpClient = testHttpClient
         )
     }
@@ -39,17 +41,19 @@ class NonaConfig internal constructor() {
     internal fun initializeForTest(
         apiKey: String,
         environmentId: String,
+        baseUrl: String = "http://localhost",
         settings: Settings,
         httpClient: HttpClient
     ) {
         this.apiKey = apiKey
         this.environmentId = environmentId
+        this.baseUrl = baseUrl
         this.testHttpClient = httpClient
         this.storage = NonaConfigStorage(settings)
         this.fetcher = NonaConfigFetcher(
             apiKey = apiKey,
             environmentId = environmentId,
-            baseUrl = this.settings.baseUrl,
+            baseUrl = this.settings.baseUrl ?: baseUrl,
             httpClient = httpClient
         )
     }
@@ -57,10 +61,11 @@ class NonaConfig internal constructor() {
     fun setConfigSettings(settings: NonaConfigSettings) {
         this.settings = settings
         if (::apiKey.isInitialized && ::environmentId.isInitialized) {
+            val effectiveUrl = settings.baseUrl ?: if (::baseUrl.isInitialized) baseUrl else ""
             this.fetcher = NonaConfigFetcher(
                 apiKey = apiKey,
                 environmentId = environmentId,
-                baseUrl = settings.baseUrl,
+                baseUrl = effectiveUrl,
                 httpClient = testHttpClient
             )
         }
