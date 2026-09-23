@@ -101,7 +101,7 @@ class NonaConfig internal constructor() {
             return@withContext FetchStatus.THROTTLED
         }
 
-        when (val result = fetcher.fetchAll(storage.eTag, settings.releaseVersion)) {
+        when (val result = fetcher.fetchAll(storage.eTag, settings.releaseVersion, settings.prefix)) {
             is NonaConfigFetcher.FetchResult.Success -> {
                 storage.saveFetchedConfig(result.config)
                 storage.eTag = result.eTag

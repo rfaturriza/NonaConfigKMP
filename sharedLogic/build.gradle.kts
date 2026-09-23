@@ -28,7 +28,7 @@ plugins {
 }
 
 group = "io.github.rfaturriza"
-version = "1.0.2"
+version = "1.0.3"
 
 kotlin {
     jvm()
@@ -103,6 +103,27 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     classDirectories.setFrom(commonMainClasses)
     sourceDirectories.setFrom(files("src/commonMain/kotlin"))
     executionData.setFrom(fileTree(project.layout.buildDirectory.get().asFile).include("jacoco/jvmTest.exec"))
+}
+
+tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    group = "Verification"
+    description = "Verify Jacoco coverage for JVM tests"
+
+    dependsOn("jacocoTestReport")
+
+    val commonMainClasses = fileTree("${project.layout.buildDirectory.get().asFile}/classes/kotlin/jvm/main")
+
+    classDirectories.setFrom(commonMainClasses)
+    sourceDirectories.setFrom(files("src/commonMain/kotlin"))
+    executionData.setFrom(fileTree(project.layout.buildDirectory.get().asFile).include("jacoco/jvmTest.exec"))
+
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.90".toBigDecimal()
+            }
+        }
+    }
 }
 
 kmmbridge {

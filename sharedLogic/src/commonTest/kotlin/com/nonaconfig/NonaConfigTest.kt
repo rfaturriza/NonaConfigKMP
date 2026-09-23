@@ -213,18 +213,65 @@ class NonaConfigTest {
             .setFetchTimeout(30.seconds)
             .setReleaseVersion("2.0.0")
             .setBaseUrl("https://custom.nona.io")
+            .setPrefix("Checkout:")
             .build()
         assertEquals(5.minutes, settings.minimumFetchInterval)
         assertEquals(30.seconds, settings.fetchTimeout)
         assertEquals("2.0.0", settings.releaseVersion)
         assertEquals("https://custom.nona.io", settings.baseUrl)
+        assertEquals("Checkout:", settings.prefix)
     }
 
     @Test
     fun testRealInitialize() {
         val config = NonaConfig()
+        assertNull(config.lastETag)
+        config.clearETag() // Should not throw when uninitialized
+
         config.initialize("test-key", "test-env", "https://test.nona.io")
         assertNotNull(config)
+        assertNull(config.lastETag)
+        config.clearETag()
+    }
+
+    @Test
+    fun testETagAndClearETag() = runTest {
+        val engine = MockEngine { _ ->
+            respond(
+                content = "{\"key\": \"value\"}",
+                status = HttpStatusCode.OK,
+                headers = headersOf(
+                    HttpHeaders.ContentType to listOf("application/json"),
+                    HttpHeaders.ETag to listOf("etag-abc")
+                )
+            )
+        }
+        val nonaConfig = createTestConfig(engine)
+        assertTrue(nonaConfig.fetch())
+        assertEquals("etag-abc", nonaConfig.lastETag)
+        nonaConfig.clearETag()
+        assertNull(nonaConfig.lastETag)
+    }
+
+    @Test
+    fun testFetchAndActivateWithStatus() = runTest {
+        val engine = MockEngine { _ ->
+            respond(
+                content = "{\"key\": \"value\"}",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+        val nonaConfig = createTestConfig(engine)
+
+        val status = nonaConfig.fetchAndActivateWithStatus()
+        assertEquals(NonaConfig.FetchStatus.SUCCESS_NEW_DATA, status)
+        assertEquals("value", nonaConfig.getString("key"))
+
+        // Callback variant
+        nonaConfig.fetchAndActivateWithStatus { callbackStatus ->
+            assertNotNull(callbackStatus)
+        }
     }
 
     @Test
@@ -254,7 +301,7 @@ class NonaConfigTest {
     @Test
     fun testSetConfigSettingsUpdatesFetcher() = runTest {
         val engine = MockEngine { request ->
-            assertTrue(request.url.toString().startsWith("https://custom.nona.io/api/env"))
+            assertTrue(request.url.toString().startsWith("https://custom.nona.io/api/environments/env/parameters"))
             respond(
                 content = "{\"key\": \"value\"}",
                 status = HttpStatusCode.OK,

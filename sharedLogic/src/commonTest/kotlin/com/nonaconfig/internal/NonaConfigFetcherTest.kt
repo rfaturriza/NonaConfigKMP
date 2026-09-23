@@ -27,9 +27,10 @@ class NonaConfigFetcherTest {
     }
 
     @Test
-    fun testFetchSuccess() = runTest {
+    fun testFetchSuccessWorkingRoute() = runTest {
         val engine = MockEngine { request ->
             assertEquals("key", request.headers["X-Api-Key"])
+            assertTrue(request.url.encodedPath.endsWith("/api/environments/env/parameters"))
             respond(
                 content = "{\"key\": \"value\"}",
                 status = HttpStatusCode.OK,
@@ -109,13 +110,48 @@ class NonaConfigFetcherTest {
     }
 
     @Test
-    fun testFetchWithVersion() = runTest {
+    fun testFetchWithActiveReleaseVersion() = runTest {
         val engine = MockEngine { request ->
-            assertTrue(request.url.parameters.contains("version", "1.0.0"))
+            assertTrue(request.url.encodedPath.endsWith("/api/environments/env/releases/active/parameters"))
+            respond(content = "{}", status = HttpStatusCode.OK)
+        }
+        val fetcher = createFetcher(engine)
+        fetcher.fetchAll(null, version = "active")
+    }
+
+    @Test
+    fun testFetchWithSpecificReleaseVersion() = runTest {
+        val engine = MockEngine { request ->
+            assertTrue(request.url.encodedPath.endsWith("/api/environments/env/releases/1.0.0/parameters"))
             respond(content = "{}", status = HttpStatusCode.OK)
         }
         val fetcher = createFetcher(engine)
         fetcher.fetchAll(null, version = "1.0.0")
+    }
+
+    @Test
+    fun testFetchWithPrefix() = runTest {
+        val engine = MockEngine { request ->
+            assertEquals("GroupA:", request.url.parameters["prefix"])
+            respond(content = "{}", status = HttpStatusCode.OK)
+        }
+        val fetcher = createFetcher(engine)
+        fetcher.fetchAll(null, prefix = "GroupA:")
+    }
+
+    @Test
+    fun testFetchStatusErrorCodes() = runTest {
+        val e401 = createFetcher(MockEngine { respond("", HttpStatusCode.Unauthorized) }).fetchAll(null)
+        assertTrue(e401 is NonaConfigFetcher.FetchResult.Error)
+        assertEquals(e401.exception.message?.contains("401 Unauthorized"), true)
+
+        val e404 = createFetcher(MockEngine { respond("", HttpStatusCode.NotFound) }).fetchAll(null)
+        assertTrue(e404 is NonaConfigFetcher.FetchResult.Error)
+        assertEquals(e404.exception.message?.contains("404 Not Found"), true)
+
+        val e409 = createFetcher(MockEngine { respond("", HttpStatusCode.Conflict) }).fetchAll(null)
+        assertTrue(e409 is NonaConfigFetcher.FetchResult.Error)
+        assertEquals(e409.exception.message?.contains("409 Conflict"), true)
     }
 
     @Test

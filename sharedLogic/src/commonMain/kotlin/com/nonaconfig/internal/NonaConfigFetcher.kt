@@ -1,13 +1,17 @@
 package com.nonaconfig.internal
 
-import io.ktor.client.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.*
-
-import io.ktor.http.*
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 internal class NonaConfigFetcher(
     private val apiKey: String,
@@ -29,46 +33,73 @@ internal class NonaConfigFetcher(
         data class Error(val exception: Exception) : FetchResult()
     }
 
-    suspend fun fetchAll(eTag: String?, version: String? = null): FetchResult {
+    suspend fun fetchAll(
+        eTag: String?,
+        version: String? = null,
+        prefix: String? = null
+    ): FetchResult {
         return try {
-            val response = client.get("$baseUrl/api/$environmentId") {
+            val endpointPath = when {
+                version.isNullOrBlank() ->
+                    "$baseUrl/api/environments/$environmentId/parameters"
+
+                version.equals("active", ignoreCase = true) ->
+                    "$baseUrl/api/environments/$environmentId/releases/active/parameters"
+
+                else ->
+                    "$baseUrl/api/environments/$environmentId/releases/$version/parameters"
+            }
+
+            val response = client.get(endpointPath) {
                 header("X-Api-Key", apiKey)
                 if (eTag != null) {
                     header(HttpHeaders.IfNoneMatch, eTag)
                 }
-                if (version != null) {
-                    parameter("version", version)
+                if (!prefix.isNullOrBlank()) {
+                    parameter("prefix", prefix)
                 }
             }
 
-            if (response.status == HttpStatusCode.NotModified) {
-                FetchResult.NotModified
-            } else if (response.status == HttpStatusCode.OK) {
-                val jsonText = response.bodyAsText()
-                val jsonElement = jsonInstance.parseToJsonElement(jsonText)
-                val configMap = mutableMapOf<String, String>()
+            when (response.status) {
+                HttpStatusCode.NotModified -> FetchResult.NotModified
+                HttpStatusCode.OK -> {
+                    val jsonText = response.bodyAsText()
+                    val jsonElement = jsonInstance.parseToJsonElement(jsonText)
+                    val configMap = mutableMapOf<String, String>()
 
-                if (jsonElement is JsonObject) {
-                    for ((key, element) in jsonElement) {
-                        val valueString = when (element) {
-                            is JsonObject -> {
-                                when (val valueChild = element["value"]) {
-                                    is JsonPrimitive -> valueChild.content
-                                    null -> element.toString()
-                                    else -> valueChild.toString()
+                    if (jsonElement is JsonObject) {
+                        for ((key, element) in jsonElement) {
+                            val valueString = when (element) {
+                                is JsonObject -> {
+                                    when (val valueChild = element["value"]) {
+                                        is JsonPrimitive -> valueChild.content
+                                        null -> element.toString()
+                                        else -> valueChild.toString()
+                                    }
                                 }
+
+                                is JsonPrimitive -> element.content
+                                else -> element.toString()
                             }
-                            is JsonPrimitive -> element.content
-                            else -> element.toString()
+                            configMap[key] = valueString
                         }
-                        configMap[key] = valueString
                     }
+
+                    val newETag = response.headers[HttpHeaders.ETag]
+                    FetchResult.Success(configMap, newETag)
                 }
 
-                val newETag = response.headers[HttpHeaders.ETag]
-                FetchResult.Success(configMap, newETag)
-            } else {
-                FetchResult.Error(Exception("Unexpected status: ${response.status}"))
+                HttpStatusCode.Unauthorized ->
+                    FetchResult.Error(Exception("401 Unauthorized: Invalid or missing X-Api-Key, or scope cannot read entry."))
+
+                HttpStatusCode.NotFound ->
+                    FetchResult.Error(Exception("404 Not Found: Environment '$environmentId', release '$version', or route not found."))
+
+                HttpStatusCode.Conflict ->
+                    FetchResult.Error(Exception("409 Conflict: Active release requested but no active release is configured."))
+
+                else ->
+                    FetchResult.Error(Exception("Unexpected status: ${response.status}"))
             }
         } catch (e: Exception) {
             FetchResult.Error(e)

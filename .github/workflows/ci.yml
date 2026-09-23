@@ -32,7 +32,7 @@ jobs:
         run: echo "NONA_API_KEY=dummy_key_for_ci" > local.properties
 
       - name: Run Tests & Coverage
-        run: ./gradlew :sharedLogic:jacocoTestReport
+        run: ./gradlew :sharedLogic:jacocoTestReport :sharedLogic:jacocoTestCoverageVerification
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4

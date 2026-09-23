@@ -8,13 +8,15 @@ class NonaConfigSettings internal constructor(
     val minimumFetchInterval: Duration,
     val fetchTimeout: Duration,
     val releaseVersion: String?,
-    val baseUrl: String?
+    val baseUrl: String?,
+    val prefix: String? = null
 ) {
     class Builder {
         private var minimumFetchInterval: Duration = 12.hours
         private var fetchTimeout: Duration = 1.minutes
         private var releaseVersion: String? = null
         private var baseUrl: String? = null
+        private var prefix: String? = null
 
         fun setMinimumFetchInterval(interval: Duration) = apply {
             this.minimumFetchInterval = interval
@@ -32,11 +34,16 @@ class NonaConfigSettings internal constructor(
             this.baseUrl = baseUrl
         }
 
+        fun setPrefix(prefix: String?) = apply {
+            this.prefix = prefix
+        }
+
         fun build(): NonaConfigSettings = NonaConfigSettings(
             minimumFetchInterval = minimumFetchInterval,
             fetchTimeout = fetchTimeout,
             releaseVersion = releaseVersion,
-            baseUrl = baseUrl
+            baseUrl = baseUrl,
+            prefix = prefix
         )
     }
 }
