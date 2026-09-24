@@ -21,7 +21,7 @@ Add the dependency directly to your `build.gradle.kts` (available on Maven Centr
 
 ```kotlin
 dependencies {
-    implementation("io.github.rfaturriza:nona-config:1.0.4")
+    implementation("io.github.rfaturriza:nona-config:1.0.5")
 }
 ```
 
@@ -30,7 +30,7 @@ dependencies {
 #### Option A: Xcode UI
 1. In Xcode, select **File > Add Package Dependencies...**
 2. Enter the repository URL: `https://github.com/rfaturriza/NonaConfigKMP`
-3. Set the **Dependency Rule** to **Up to Next Major Version** starting from `1.0.4`.
+3. Set the **Dependency Rule** to **Up to Next Major Version** starting from `1.0.5`.
 4. Add `NonaConfig` to your app target.
 
 #### Option B: `Package.swift`
@@ -41,7 +41,7 @@ If your project uses a `Package.swift` manifest, add the dependency to your `Pac
 let package = Package(
     name: "MyApp",
     dependencies: [
-        .package(url: "https://github.com/rfaturriza/NonaConfigKMP", from: "1.0.4")
+        .package(url: "https://github.com/rfaturriza/NonaConfigKMP", from: "1.0.5")
     ],
     targets: [
         .target(
