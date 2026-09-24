@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
+    tags: [ 'v*', '[0-9]*' ]
   pull_request:
     branches: [ main ]
 
@@ -41,13 +41,13 @@ jobs:
           files: sharedLogic/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
 
       - name: Publish to GitHub Packages
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
         run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to Maven Central
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
         run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
@@ -58,13 +58,20 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
 
       - name: KMMBridge Publish (iOS SPM)
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
         run: ./gradlew :sharedLogic:kmmBridgePublish -PENABLE_PUBLISHING=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit & Push Package.swift
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+      - name: Extract Project Version
+        id: get_version
+        run: |
+          VERSION=$(grep -E 'version\s*=\s*"[^"]+"' sharedLogic/build.gradle.kts | head -n 1 | cut -d '"' -f 2)
+          echo "PROJECT_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Extracted project version: $VERSION"
+
+      - name: Commit & Push Package.swift and Update Version Tags
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -72,14 +79,13 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes in Package.swift to commit."
           else
-            git commit -m "Update Package.swift ${{ github.ref_name }} [skip ci]"
-            if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-              # Update and force-push the tag so SPM points to the commit with updated Package.swift
-              git tag -f "${{ github.ref_name }}"
-              git push origin -f "${{ github.ref_name }}"
-              # Also sync the updated Package.swift back to main
-              git push origin HEAD:main
-            else
-              git push origin HEAD:${{ github.ref_name }}
-            fi
+            TAG_NAME="${PROJECT_VERSION}"
+            git commit -m "Update Package.swift for ${TAG_NAME} [skip ci]"
+            
+            # 1. Sync updated Package.swift to main branch
+            git push origin HEAD:main
+            
+            # 2. Automatically create and force-update release tag for SPM (e.g. 1.0.5)
+            git tag -f "${TAG_NAME}"
+            git push origin -f "${TAG_NAME}"
           fi
