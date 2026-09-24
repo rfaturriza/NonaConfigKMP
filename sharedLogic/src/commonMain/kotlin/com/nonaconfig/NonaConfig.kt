@@ -6,6 +6,9 @@ import com.nonaconfig.internal.currentTimeMillis
 import com.russhwolf.settings.Settings
 import io.ktor.client.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.KSerializer
 
 import kotlin.native.ObjCName
@@ -34,6 +37,9 @@ class NonaConfig internal constructor() {
 
     val lastETag: String?
         get() = if (::storage.isInitialized) storage.eTag else null
+
+    private val _configUpdates = MutableSharedFlow<Set<String>>(extraBufferCapacity = 64)
+    val configUpdates: Flow<Set<String>> = _configUpdates.asSharedFlow()
 
     fun clearETag() {
         if (::storage.isInitialized) {
@@ -133,7 +139,24 @@ class NonaConfig internal constructor() {
     fun activate(): Boolean {
         val fetched = storage.getFetchedConfig()
         if (fetched.isEmpty()) return false
+        val active = storage.getActiveConfig()
+
+        val changedKeys = mutableSetOf<String>()
+        for ((key, value) in fetched) {
+            if (active[key] != value) {
+                changedKeys.add(key)
+            }
+        }
+        for (key in active.keys) {
+            if (key !in fetched) {
+                changedKeys.add(key)
+            }
+        }
+
         storage.saveActiveConfig(fetched)
+        if (changedKeys.isNotEmpty()) {
+            _configUpdates.tryEmit(changedKeys)
+        }
         return true
     }
 

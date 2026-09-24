@@ -6,6 +6,9 @@ import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -60,6 +63,31 @@ class NonaConfigTest {
         assertEquals("default", nonaConfig.getString("key1"), "Value should not change before activate")
         assertTrue(nonaConfig.activate(), "Activate should succeed")
         assertEquals("remote", nonaConfig.getString("key1"), "Value should change after activate")
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testConfigUpdatesFlow() = runTest {
+        val engine = MockEngine { _ ->
+            respond(
+                content = "{\"key1\": \"remote_value\", \"key2\": \"new_value\"}",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+        val nonaConfig = createTestConfig(engine)
+
+        var emittedChangedKeys: Set<String>? = null
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            nonaConfig.configUpdates.collect { keys ->
+                emittedChangedKeys = keys
+            }
+        }
+
+        assertTrue(nonaConfig.fetch())
+        assertTrue(nonaConfig.activate())
+
+        assertEquals(setOf("key1", "key2"), emittedChangedKeys)
     }
 
     @Test
