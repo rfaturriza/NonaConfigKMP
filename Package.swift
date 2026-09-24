@@ -2,8 +2,8 @@
 import PackageDescription
 
 // BEGIN KMMBRIDGE VARIABLES BLOCK (do not edit)
-let remoteKotlinUrl = "https://api.github.com/repos/rfaturriza/NonaConfigKMP/releases/assets/585144165.zip"
-let remoteKotlinChecksum = "ad9466c737338b7311d50869a64bd3465011561399ecb50b1d996e7c8d4043c6"
+let remoteKotlinUrl = "https://api.github.com/repos/rfaturriza/NonaConfigKMP/releases/assets/585171745.zip"
+let remoteKotlinChecksum = "0a1020c637759b10342d44758dfb40d9432d1c9848f565a41eaf6aa738391419"
 let packageName = "NonaConfig"
 // END KMMBRIDGE BLOCK
 
